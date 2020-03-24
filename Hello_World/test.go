@@ -22,7 +22,7 @@ func main(){
   fmt.Println(&p.name)
   fmt.Println(&p)
   z := []int{1,2,3,4,5}
-  z = append(z, 20)
+  z = append(z , 20)
   z[0] = 10
   for index, value := range z{
     fmt.Println(index, value)
