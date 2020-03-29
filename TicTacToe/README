@@ -1,0 +1,9 @@
+Tic Tac Toe
+A simple tic tac toe game written in Go
+
+To run the program:
+	go run main.go
+
+Or compile then run:
+	go build main.go
+	./main
