@@ -8,24 +8,33 @@ import(
 var grid[3][3] int
 var user1 int
 var user2 int
+var situation int
+const MAX = 9
 
 func main() {
 	fmt.Println("\tGame Initializing")
-	if rand.Intn(2) != -1{
+	print()
+
+	if rand.Intn(2) == 0{
 		fmt.Println("User1 Start")
 		user1 = 1
 		user2 = -1
+		situation = 1
 
 	} else{
 		fmt.Println("User2 Start")
 		user1 = -1
 		user2 = 1
+		situation = 0
 	}
 	//fmt.Println(detect())
 	var x int
 	var y int
 	count := 1
+	step :=0
 	for detect() != 1{
+		step++
+		fmt.Println("Please Input the wanted (row column)")
 		fmt.Scanf("%d", &x)
 		fmt.Scanf("%d", &y)
 		if count > 0{
@@ -33,17 +42,30 @@ func main() {
 		}else if count < 0{
 			count +=2
 		}
-		placekey(x,y,count)
-		fmt.Println(detect())
+		for placekey(x,y,count)!= 0{
+			fmt.Println("Please Re-Input the wanted (row column)")
+			fmt.Scanf("%d", &x)
+			fmt.Scanf("%d", &y)
+		}
 		print()
+		if detect() == 1{
+			if situation ==1 && count == 1{
+				fmt.Println("User1 WIN!!!")
+			}else if situation ==1 && count == -1{
+				fmt.Println("User2 WIN!!!")
+			}
+			if situation ==0 && count == -1{
+				fmt.Println("User1 WIN!!!")
+			}else if situation ==0 && count == 1{
+				fmt.Println("User2 WIN!!!")
+			}
+		}
+		if(step == MAX){
+			fmt.Println("It's a TIE!!!")
+			break
+		}
 	}
 
-	/*print()
-	placekey(0,0,user1)
-	placekey(1,1,user2)
-	placekey(2,2,user1)
-	placekey(0,0,user2)
-	print()*/
 }
 
 func placekey(x int, y int, z int) int{
