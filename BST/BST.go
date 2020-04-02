@@ -2,7 +2,6 @@ package BST
 
 import(
 	"fmt"
-	"math"
 	"strings"
 )
 
@@ -93,15 +92,17 @@ func helper_insert(value int, node *Node, small bool) bool{
 }
 
 //delete a value from the tree gvien the value
-func delete(value int, tree *Tree) bool{
+func delete(value int, tree *Tree)bool{
 	if size(tree) ==  0{
 		return false
 	} else{
-		if helper_delete(value, tree.root, tree.small){
+		temp := helper_delete(value, tree.root, tree.small)
+		if temp != nil{
 			tree.size --
 			return true
+		}else{
+			return false
 		}
-		return false
 	}
 }
 
@@ -124,7 +125,7 @@ func helper_delete(value int, node *Node, small bool) *Node{
 
 			temp := findNext(node.right)
 			node.value = temp.value
-			node.right = helper_delete(node.right, node.value, small)
+			node.right = helper_delete(node.value, node.right, small)
 		}
 		return node
 	} else {
@@ -141,7 +142,7 @@ func helper_delete(value int, node *Node, small bool) *Node{
 
 			temp := findNext(node.right)
 			node.value = temp.value
-			node.right = helper_delete(node.right, node.value, small)
+			node.right = helper_delete(node.value, node.right, small)
 		}
 		return node
 	}
@@ -244,7 +245,15 @@ func helper_rank(node *Node) int{
 	if node == nil{
 		return 0
 	}
-	return 1+math.max(helper_rank(node.left), helper_rank(node.right))
+	return 1+Max(helper_rank(node.left), helper_rank(node.right))
+}
+
+//math.max is invalid so i write my own
+func Max(x int, y int) int {
+    if x < y {
+        return y
+    }
+    return x
 }
 
 //now we are going to print out the tree
