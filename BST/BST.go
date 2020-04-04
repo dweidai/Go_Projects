@@ -109,7 +109,10 @@ func delete(value int, tree *Tree)bool{
 //recursive hlper method to delete the given value from the node traverse
 func helper_delete(value int, node *Node, small bool) *Node{
 	if node == nil{
-		return nil;
+		return nil
+	}
+	if !helper_has(value, node, small){
+		return nil
 	}
 	if small == true{
 		if value < node.value{
@@ -259,6 +262,7 @@ func Max(x int, y int) int {
 //now we are going to print out the tree
 func print(tree *Tree, order string){
 	helper_print(tree.root, order)
+	fmt.Print("\n")
 }
 
 func helper_print(node *Node, order string){
@@ -311,9 +315,9 @@ func Kth(tree *Tree, k int) int{
 
 func helper_Kth(node *Node, k int) int{
 	size := countNodes(node)
-	if k <= size {
+	if k <= size && node.left != nil {
 		return helper_Kth(node.left, k)
-	}else if k > size+1 {
+	}else if k > size+1 && node.right != nil{
 		return helper_Kth(node.right, k-1-size)
 	}
 	return node.value
