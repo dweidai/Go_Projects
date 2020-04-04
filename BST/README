@@ -1,0 +1,6 @@
+Binary Search Tree (BST)
+A simple BST  written in Go
+
+To test the program:
+	go test -run '.*'
+
