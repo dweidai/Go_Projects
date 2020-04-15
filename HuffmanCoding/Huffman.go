@@ -115,5 +115,6 @@ func Print(root *Node){
 
 
 func main(){
+	Print(BuildTree(MakeNodes("./TEST.TXT")))
 	Print(BuildTree(MakeNodes("./TEXT.txt")))
 }
