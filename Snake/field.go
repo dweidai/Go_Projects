@@ -14,7 +14,7 @@ type Field struct{
 	edges map[Node]int
 }
 
-func NewField(width int, height int) *Field{
+func newField(width int, height int) *Field{
 	f := new(Field)
 	f.Entity = tl.NewEntity(1, 1, 1, 1)
 	f.width = width-1
@@ -31,7 +31,7 @@ func NewField(width int, height int) *Field{
 	return f
 }
 
-func (f *Field) Draw(screen *tl.Screen){
+func (f *Field) update(screen *tl.Screen){
 	for c:range f.edges{
 		screen.RenderCell(c.x, c.y, &tl.Cell{
 				Bg: tl.ColorBlue,
@@ -39,7 +39,7 @@ func (f *Field) Draw(screen *tl.Screen){
 	}
 }
 
-func (f *Field) Contain(cord Node) bool{
+func (f *Field) contain(cord Node) bool{
 	value, ok := f.edges[cord]
 	if value != 0 && value != 1{
 		return false

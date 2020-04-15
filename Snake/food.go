@@ -23,11 +23,11 @@ func randInRange(min, max int) int {
 	return rand.Intn(max-min) + min
 }
 
-func (f *Food)position()(int, int){
+func (f *Food) position()(int, int){
 	return f.node.x, f.node.f
 }
 
-func (f *Food)display(screen *tl.Screen){
+func (f *Food) display(screen *tl.Screen){
 	screen.RenderCell(f.coord.x, f.coord.y, &tl.Cell{
 		Fg: tl.ColorRed,
 		Ch: '*',
@@ -36,4 +36,11 @@ func (f *Food)display(screen *tl.Screen){
 
 func (f *Food) snakeCollision() {
 	f = newFood()
+}
+
+func (f *Food) collide(collision tl.Physical){
+	switch collision.(type){
+	case *Snake:
+		f.snakeCollision()
+	}
 }

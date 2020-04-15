@@ -56,6 +56,22 @@ func (s *Snake) collideTest(field *Field) bool{
 		return false
 	}
 }
+func (s *Snake) collide(collision tl.Physical){
+	switch collision.(type){
+	case *Food:
+		s.foodCollision()
+	case *Border:
+		s.borderCollision() 
+	}
+}
+
+func (s *Snake) foodCollision(){
+	s.grow()
+}
+
+func (s *Snake) borderCollision(){
+	//Endgame
+}
 
 func (s *Snake) update(screen *tl.Screen){
 	newHead := *s.getHead()
