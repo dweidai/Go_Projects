@@ -28,7 +28,9 @@ func MakeNodes(text string) []*Node{
 	}
 	data := string(dat)
 	for i, c := range data{
-		fmt.Println(i)
+		if i <0{
+			fmt.Println("INDEX INCORRECT")
+		}
 		m[string(c)] = m[string(c)]+1
 	}
 	toReturn := make([]*Node, int(len(m)))
@@ -112,9 +114,6 @@ func Print(root *Node){
 
 
 
-
-
-
 func main(){
-	MakeNodes("/Users/dwei/go_projects/HuffmanCoding/TEST.txt")
+	Print(BuildTree(MakeNodes("./TEXT.txt")))
 }

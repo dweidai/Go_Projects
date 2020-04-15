@@ -1,5 +1,10 @@
 package huffman
 
+/*
+ * Those codes are not mine, I have copied those from github
+ * I did not do additional testing
+ */
+ 
 import (
 	"fmt"
 	"testing"
