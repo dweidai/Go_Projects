@@ -6,40 +6,11 @@ import (
 	"time"
 
 	tl "github.com/JoelOtter/termloop"
+	//"github.com/nsf/termbox-go"
 )
-var game *tl.Game
-var field *Field
 
-func endGame(){
-	end := tl.NewBaseLevel(tl.Cell{
-		Bg:tl.ColorBlack,
-	})
-	game.Screen().SetLevel(end)
-}
-
-func main(){
-	fmt.Println("the game is about to start")
-
-	rand.Seed(time.Now().UnixNano())
-
-	game := tl.NewGame()
-	main := tl.NewBaseLevel(tl.Cell{
-		Bg: tl.ColorBlack,
-	})
-	width := 80
-	height := 30
-	field := newField(width, height)
-	snake := newSnake()
-	food := newFood(width, height)
-
-	main.AddEntity(field)
-	main.AddEntity(snake)
-	main.AddEntity(food)
-
-	game.Screen().SetLevel(main)
-	game.Screen().SetFps(10)
-	game.Start()
-}
+var width int
+var height int
 
 type Node struct{
 	x int
@@ -51,11 +22,15 @@ type Food struct{
 	location Node
 }
 
-func newFood(width int, height int) *Food{
+func newFood() *Food{
 	f := new(Food)
 	f.Entity = tl.NewEntity(1,1,1,1)
-	f.location.x = randInRange(1, width-1)
-	f.location.y = randInRange(1, height-1)
+	width = 80
+	height = 30
+	newX := randInRange(1, width-1)
+	newY := randInRange(1, height-1)
+	f.location.x = newX
+	f.location.y = newY
 	return f
 }
 
@@ -63,25 +38,25 @@ func randInRange(min, max int) int {
 	return rand.Intn(max-min) + min
 }
 
-func (f *Food) position()(int, int){
+func (f *Food) Position()(int, int){
 	return f.location.x, f.location.y
 }
 
-func (f *Food) display(screen *tl.Screen){
+func (f *Food) Draw(screen *tl.Screen){
 	screen.RenderCell(f.location.x, f.location.y, &tl.Cell{
 		Fg: tl.ColorRed,
-		Ch: '*',
+		Ch: '@',
 	})
 }
 
-func (f *Food) snakeCollision(width int, height int) {
-	f = newFood(width, height)
+func (f *Food) snakeCollision() {
+	f = newFood()
 }
 
-func (f *Food) collide(collision tl.Physical, width int, height int){
+func (f *Food) Collide(collision tl.Physical){
 	switch collision.(type){
 	case *Snake:
-		f.snakeCollision(width, height)
+		f.snakeCollision()
 	}
 }
 
@@ -109,7 +84,7 @@ func newField(width int, height int) *Field{
 	return f
 }
 
-func (f *Field) update(screen *tl.Screen){
+func (f *Field) Draw(screen *tl.Screen){
 	for c := range f.edges{
 		screen.RenderCell(c.x, c.y, &tl.Cell{
 				Bg: tl.ColorBlue,
@@ -117,7 +92,7 @@ func (f *Field) update(screen *tl.Screen){
 	}
 }
 
-func (f *Field) contain(cord Node) bool{
+func (f *Field) Contains(cord Node) bool{
 	value, ok := f.edges[cord]
 	if value != 0 && value != 1{
 		return false
@@ -150,32 +125,29 @@ func newSnake() *Snake{
 		{9, 10},
 	}
 	s.length = len(s.body)
+	fmt.Println(s.length)
 	s.direction = right
 	return s
 }
 
 func (s *Snake) getHead() *Node{
-	return &s.body[s.length-1]
+	return &s.body[len(s.body)-1]
 }
 
 func (s *Snake) grow(){
-	s.length ++
+	s.length += 2
 }
 
-func (s *Snake) collideTest(field *Field) bool{
-	if field.contain(*s.getHead()){
-		return true
-	} else{
-		for i:=0; i<s.length-1; i++{
-			if *s.getHead() == s.body[i]{
-				return true
-			}
+func (s *Snake) collideTest() bool{
+	for i:=0; i<s.length-1; i++{
+		if *s.getHead() == s.body[i]{
+			return true
 		}
-		return false
 	}
-	return false
+	return field.Contains(*s.getHead())
 }
-func (s *Snake) collide(collision tl.Physical){
+
+func (s *Snake) Collide(collision tl.Physical){
 	switch collision.(type){
 	case *Food:
 		s.foodCollision()
@@ -192,7 +164,7 @@ func (s *Snake) borderCollision(){
 	endGame()
 }
 
-func (s *Snake) update(screen *tl.Screen, field *Field){
+func (s *Snake) Draw(screen *tl.Screen){
 	newHead := *s.getHead()
 	if s.direction == right{
 		newHead.x++
@@ -203,15 +175,15 @@ func (s *Snake) update(screen *tl.Screen, field *Field){
 	} else{
 		newHead.y--
 	}
-	if s.length > len(s.body){
+	for s.length > len(s.body){
 		s.body = append(s.body, newHead)
 	}else{
 		s.body = append(s.body[1:], newHead)
 	}
-	if s.collideTest(field){
+	if s.collideTest(){
 		endGame()
 	}
-
+	s.SetPosition(newHead.x, newHead.y)
 	for i, j:=range s.body{
 		if i >= 0{
 			screen.RenderCell(j.x, j.y, &tl.Cell{
@@ -222,7 +194,7 @@ func (s *Snake) update(screen *tl.Screen, field *Field){
 	}
 }
 
-func (s *Snake) keyPress(event tl.Event){
+func (s *Snake) Tick(event tl.Event){
 	if event.Type == tl.EventKey{
 		switch event.Key {
 		case tl.KeyArrowRight:
@@ -243,4 +215,41 @@ func (s *Snake) keyPress(event tl.Event){
 			}
 		}
 	}
+}
+
+var game *tl.Game
+var field *Field
+
+func endGame(){
+	end := tl.NewBaseLevel(tl.Cell{
+		Bg:tl.ColorBlack,
+	})
+	game.Screen().SetLevel(end)
+}
+
+func main(){
+	fmt.Println("the game is about to start")
+
+	rand.Seed(time.Now().UnixNano())
+
+	game := tl.NewGame()
+
+	main := tl.NewBaseLevel(tl.Cell{
+		Bg: tl.ColorBlack,
+	})
+	width := 80
+	height := 30
+	//termbox.Init()
+	//width, height = termbox.Size()
+	field := newField(width, height)
+	snake := newSnake()
+	food := newFood()
+
+	main.AddEntity(field)
+	main.AddEntity(snake)
+	main.AddEntity(food)
+
+	game.Screen().SetLevel(main)
+	game.Screen().SetFps(10)
+	game.Start()
 }
