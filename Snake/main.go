@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"math/rand"
 	"time"
 
@@ -50,6 +49,8 @@ func (f *Food) Draw(screen *tl.Screen){
 }
 
 func (f *Food) snakeCollision() {
+	f.location.x = 0
+	f.location.y = 0
 	f = newFood()
 }
 
@@ -77,7 +78,7 @@ func newField(width int, height int) *Field{
 		f.edges[Node{i, 0}] = 1
 		f.edges[Node{i, f.height}] = 1
 	}
-	for j:=0; j<f.height; j++{
+	for j:=0; j<f.height +1; j++{
 		f.edges[Node{0, j}] = 1
 		f.edges[Node{f.width, j}] = 1
 	}
@@ -93,10 +94,7 @@ func (f *Field) Draw(screen *tl.Screen){
 }
 
 func (f *Field) Contains(cord Node) bool{
-	value, ok := f.edges[cord]
-	if value != 0 && value != 1{
-		return false
-	} 
+	_, ok := f.edges[cord]
 	return ok
 }
 
@@ -114,9 +112,10 @@ type Snake struct{
 	body []Node
 	direction direction
 	length int
+	field *Field
 }
 
-func newSnake() *Snake{
+func newSnake(field *Field) *Snake{
 	s := new(Snake)
 	s.Entity = tl.NewEntity(5,5,1,1)
 	s.body = []Node{ 
@@ -125,8 +124,8 @@ func newSnake() *Snake{
 		{9, 10},
 	}
 	s.length = len(s.body)
-	fmt.Println(s.length)
 	s.direction = right
+	s.field = field
 	return s
 }
 
@@ -144,7 +143,10 @@ func (s *Snake) collideTest() bool{
 			return true
 		}
 	}
-	return field.Contains(*s.getHead())
+	if s.field.Contains(*s.getHead()){
+		return true
+	}
+	return false
 }
 
 func (s *Snake) Collide(collision tl.Physical){
@@ -171,24 +173,27 @@ func (s *Snake) Draw(screen *tl.Screen){
 	} else if s.direction == left{
 		newHead.x--
 	} else if s.direction == up{
-		newHead.y++
-	} else{
 		newHead.y--
+	} else{
+		newHead.y++
 	}
-	for s.length > len(s.body){
+	if s.length > len(s.body){
 		s.body = append(s.body, newHead)
-	}else{
+	} else{
 		s.body = append(s.body[1:], newHead)
 	}
+
+	s.SetPosition(newHead.x, newHead.y)
+
 	if s.collideTest(){
 		endGame()
 	}
-	s.SetPosition(newHead.x, newHead.y)
+	
 	for i, j:=range s.body{
 		if i >= 0{
 			screen.RenderCell(j.x, j.y, &tl.Cell{
 				Fg: tl.ColorGreen,
-				Ch: 'o',
+				Ch: 'D',
 			})
 		}
 	}
@@ -228,8 +233,6 @@ func endGame(){
 }
 
 func main(){
-	fmt.Println("the game is about to start")
-
 	rand.Seed(time.Now().UnixNano())
 
 	game := tl.NewGame()
@@ -242,7 +245,7 @@ func main(){
 	//termbox.Init()
 	//width, height = termbox.Size()
 	field := newField(width, height)
-	snake := newSnake()
+	snake := newSnake(field)
 	food := newFood()
 
 	main.AddEntity(field)
