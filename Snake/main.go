@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"math/rand"
 	"time"
-	 "os"
+	"os"
 	tl "github.com/JoelOtter/termloop"
 )
 
@@ -28,6 +28,21 @@ type Node struct{
 type Food struct{
 	*tl.Entity
 	location Node
+}
+
+type Field struct{
+	*tl.Entity
+	width int
+	height int
+	edges map[Node]int
+}
+
+type Snake struct{
+	*tl.Entity
+	body []Node
+	direction direction
+	length int
+	field *Field
 }
 
 func randInRange(min, max int) int {
@@ -63,13 +78,6 @@ func (f *Food) Collide(collision tl.Physical){
 	}
 }
 
-type Field struct{
-	*tl.Entity
-	width int
-	height int
-	edges map[Node]int
-}
-
 func newField(width int, height int) *Field{
 	f := new(Field)
 	f.Entity = tl.NewEntity(1, 1, 1, 1)
@@ -98,15 +106,6 @@ func (f *Field) Draw(screen *tl.Screen){
 func (f *Field) Contains(cord Node) bool{
 	_, ok := f.edges[cord]
 	return ok
-}
-
-
-type Snake struct{
-	*tl.Entity
-	body []Node
-	direction direction
-	length int
-	field *Field
 }
 
 func newSnake(field *Field) *Snake{
