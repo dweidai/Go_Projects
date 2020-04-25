@@ -27,10 +27,15 @@ func init_Info(){
 	flag.BoolVar(&takeVideos, "videos", false, "Grab videos, please input y/n yes/no")
 	flag.Parse()
 	var temp string
-	fmt.Println("Please enter an instagram url")
-	fmt.Scan(&url)
-	fmt.Println("Please enter the instagram username")
-	fmt.Scan(&username)
+	fmt.Println("You want to download using instagram url or username (url/user)")
+	fmt.Scan(&temp)
+	if strings.ToLower(temp) == "url"{
+		fmt.Println("Please enter an instagram url")
+		fmt.Scan(&url)
+	} else if strings.ToLower(temp) == "user"{
+		fmt.Println("Please enter the instagram username")
+		fmt.Scan(&username)
+	}
 	fmt.Println("Please enter the output path or empty then the default is current directory")
 	fmt.Scan(&outputPath)
 	if outputPath == ""{
@@ -69,19 +74,42 @@ func init_Info(){
 	} else{
 		takeVideos = true
 	}
-	if url == "" || username == ""{
-		fmt.Println("The url and the username for Instagram is required")
+	if url == "" && username == ""{
+		fmt.Println("The url or the username for Instagram is required")
 		flag.Usage()
 		os.Exit(1)
 	}
 }
 
+func newRequest(igusername string, igurl string) (error){
+	if igusername != "" && igurl == ""{
+		url = fmt.Sprintf("https://www.instagram.com/%s/media", igusername)
+	} else if igusername == "" && igurl != ""{
+		var err error
+		temp := "https://www.instagram.com/"
+		length := len(temp)
+		urlCount := len(igurl)
+		if urlCount <= 26 {
+			err = errors.New("URL is not long enough to determine username")
+		}
+		_url = igurl[26:]
+		count := 0
+		for ii := 0; ii < urlCount; ii++ {
+			if _url[ii:ii+1] == "/" {
+				username = _url[:ii]
+				count = 1
+			}
+		}
+		if count == 0{
+			err = errors.New("Username not found")
+		}
+		if err != nil{
+			os.Exit(1)
+		}
+		
+	}
+}
 func main(){
 	init_Info()
-	fmt.Println(url)
-	fmt.Println(username)
-	fmt.Println(outputPath)
-	fmt.Println(downloadCount)
-	fmt.Println(takeImages)
-	fmt.Println(takeVideos)
+	
 }
