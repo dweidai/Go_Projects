@@ -118,15 +118,12 @@ func newRequest(igusername string, igurl string) (error){
 }
 func main(){
 	init_Info()
-	fmt.Println(url)
-	fmt.Println(username)
-	fmt.Println("---------------------")
 	err := newRequest(username, url)
 	if err != nil{
 		fmt.Printf("Fetch: %s\n", err.Error())
 		os.Exit(1)
 	}
-	fmt.Println(url)
-	fmt.Println(username)
+	mediaType := "images"
+	var mediaList []string
 	
 }
