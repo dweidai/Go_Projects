@@ -2,11 +2,13 @@ package main
 
 
 import(
+	"errors"
 	"flag"
 	"fmt"
 	"os"
 	"strings"
 	"strconv"
+	"net/http"
 )
 	
 var (
@@ -36,9 +38,9 @@ func init_Info(){
 		fmt.Println("Please enter the instagram username")
 		fmt.Scan(&username)
 	}
-	fmt.Println("Please enter the output path or empty then the default is current directory")
+	fmt.Println("Please enter the output path or \"skip\" then the default is current directory")
 	fmt.Scan(&outputPath)
-	if outputPath == ""{
+	if outputPath == "skip"{
 		outputPath = "./"
 	}
 	fmt.Println("Please enter the number of contents your want to download (enter \"all\" to download all)")
@@ -83,33 +85,48 @@ func init_Info(){
 
 func newRequest(igusername string, igurl string) (error){
 	if igusername != "" && igurl == ""{
-		url = fmt.Sprintf("https://www.instagram.com/%s/media", igusername)
+		url = fmt.Sprintf("https://www.instagram.com/%s", igusername)
 	} else if igusername == "" && igurl != ""{
 		var err error
 		temp := "https://www.instagram.com/"
 		length := len(temp)
 		urlCount := len(igurl)
-		if urlCount <= 26 {
+		if urlCount <= length {
 			err = errors.New("URL is not long enough to determine username")
 		}
-		_url = igurl[26:]
-		count := 0
-		for ii := 0; ii < urlCount; ii++ {
-			if _url[ii:ii+1] == "/" {
-				username = _url[:ii]
-				count = 1
-			}
-		}
-		if count == 0{
+		want := strings.SplitAfterN(url, "/", 4)
+		if want[0] == "https:/" && want[1] == "/" && want[2] == "www.instagram.com/"{
+			username = strings.Trim(want[3], "/")
+		} else {
 			err = errors.New("Username not found")
 		}
 		if err != nil{
-			os.Exit(1)
+			return err
 		}
-		
 	}
+	req, err := http.Get(url)
+	if err != nil{
+		return err
+	}
+	content := *req
+	if content.Status != "200 OK"{
+		fmt.Println(url)
+		fmt.Println(content.Status)
+		err = errors.New("Username not found or invalid")
+	}
+	return err
 }
 func main(){
 	init_Info()
+	fmt.Println(url)
+	fmt.Println(username)
+	fmt.Println("---------------------")
+	err := newRequest(username, url)
+	if err != nil{
+		fmt.Printf("Fetch: %s\n", err.Error())
+		os.Exit(1)
+	}
+	fmt.Println(url)
+	fmt.Println(username)
 	
 }
