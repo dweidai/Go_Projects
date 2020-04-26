@@ -9,7 +9,7 @@ import(
 	//"io/ioutil"
 )
 
-func main(){
+func test(){
 	//curl := exec.Command("curl", "https://www.instagram.com/cindymello/")
 	//output, e := curl.Output()
 	//fmt.Println(reflect.TypeOf(output).Kind())
