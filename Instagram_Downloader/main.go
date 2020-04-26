@@ -83,7 +83,7 @@ func init_Info(){
 	}
 }
 
-func newRequest(igusername string, igurl string) (error){
+func newRequest(igusername string, igurl string) (ig_struct, error){
 	if igusername != "" && igurl == ""{
 		url = fmt.Sprintf("https://www.instagram.com/%s", igusername)
 	} else if igusername == "" && igurl != ""{
@@ -101,12 +101,12 @@ func newRequest(igusername string, igurl string) (error){
 			err = errors.New("Username not found")
 		}
 		if err != nil{
-			return err
+			return ig_struct{}, err
 		}
 	}
 	req, err := http.Get(url)
 	if err != nil{
-		return err
+		return ig_struct{}, err
 	}
 	content := *req
 	if content.Status != "200 OK"{
@@ -114,16 +114,19 @@ func newRequest(igusername string, igurl string) (error){
 		fmt.Println(content.Status)
 		err = errors.New("Username not found or invalid")
 	}
+	defer req.Body.Close()
+	if err = json.NewDecoder(resp.Body).Decode(&ig); err != nil {
+		return ig_struct{}, fmt.Errorf("JSON: %s\n", err.Error())
+	}
 	return err
 }
 func main(){
 	init_Info()
-	err := newRequest(username, url)
+	ig, err := newRequest(username, url)
 	if err != nil{
 		fmt.Printf("Fetch: %s\n", err.Error())
 		os.Exit(1)
 	}
-	mediaType := "images"
-	var mediaList []string
+	fmt.Println(ig)
 	
 }

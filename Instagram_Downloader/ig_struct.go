@@ -2,7 +2,7 @@ package main
 /* disclaimer 
  * This data type strcut is not mine, I copied from online source
  */ 
-type instagramPage struct {
+type ig_struct struct {
 	Items []struct {
 		AltMediaURL       string `json:"alt_media_url"`
 		CanDeleteComments bool   `json:"can_delete_comments"`
