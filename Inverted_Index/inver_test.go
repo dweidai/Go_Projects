@@ -1,5 +1,0 @@
-package invert
-
-import(
-	"testing"
-)
