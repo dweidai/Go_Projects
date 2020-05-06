@@ -17,7 +17,7 @@ type Result struct{
 }
 
 func newInvertedIndex() *InvertedIndex{
-	index := &InvertedIndex()
+	index := &InvertedIndex{}
 	index.indexMap = make(map[string][]Result)
 	return index
 }
@@ -43,8 +43,8 @@ func (index *InvertedIndex) Parse(filename string) {
 		_, found := index.indexMap[tokenText]
 		pos := s.Pos()
 		result := Result{File: filename,
-			Line:  pos.Line,
-			Index: pos.Column - len(tokenText)}
+			line:  pos.Line,
+			index: pos.Column - len(tokenText)}
 		if !found {
 			index.indexMap[tokenText] = []Result{result}
 		} else {
@@ -55,7 +55,6 @@ func (index *InvertedIndex) Parse(filename string) {
 	index.files = append(index.files, filename)
 }
 
-// Get search the text in this inverted index
 func (index *InvertedIndex) Get(text string) []Result {
 	return index.indexMap[text]
 }

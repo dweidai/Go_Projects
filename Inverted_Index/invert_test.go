@@ -8,17 +8,17 @@ import (
 
 func TestAddFile(t *testing.T) {
 	file := createFileWithText("example")
-	index := New()
+	index := newInvertedIndex()
 	index.Parse(file)
 	result := index.Get("example")[0]
 	if result.File != file {
 		t.Errorf("file name should be %s\n", file)
 	}
-	if result.Line != 1 {
+	if result.line != 1 {
 		t.Errorf("line should be %d\n", 1)
 	}
-	if result.Index != 1 {
-		t.Errorf("index should be %d\n but was %d\n", 1, result.Index)
+	if result.index != 1 {
+		t.Errorf("index should be %d\n but was %d\n", 1, result.index)
 	}
 	defer deleteFile(file)
 }
@@ -29,7 +29,7 @@ func TestWithMoreThanOneFile(t *testing.T) {
 	defer deleteFile(file1)
 	defer deleteFile(file2)
 
-	index := New()
+	index := newInvertedIndex()
 	index.Parse(file1)
 	index.Parse(file2)
 	results := index.Get("text1")
@@ -47,7 +47,7 @@ func TestWithMoreWords(t *testing.T) {
 	file := createFileWithText("alea jacta est")
 	defer deleteFile(file)
 
-	index := New()
+	index := newInvertedIndex()
 	index.Parse(file)
 	results := index.Get("est")
 	if len(results) != 1 {
@@ -56,8 +56,8 @@ func TestWithMoreWords(t *testing.T) {
 	if results[0].File != file {
 		t.Errorf("file name should be %s\n", file)
 	}
-	if results[0].Index != 12 {
-		t.Errorf("index should be %d\n but was %d\n", 1, results[0].Index)
+	if results[0].index != 12 {
+		t.Errorf("index should be %d\n but was %d\n", 1, results[0].index)
 	}
 }
 
@@ -65,7 +65,7 @@ func TestWordNotFound(t *testing.T) {
 	file := createFileWithText("alea jacta est")
 	defer deleteFile(file)
 
-	index := New()
+	index := newInvertedIndex()
 	results := index.Get("banana")
 	if len(results) != 0 {
 		t.Error("should be no results")
