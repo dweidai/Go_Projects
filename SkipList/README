@@ -1,0 +1,4 @@
+go implementation using go
+assisted by kkdai
+
+go test -run ".*"
