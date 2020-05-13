@@ -1,1 +1,3 @@
+##The ig_struct json parser is out of date
+
 go run *.go

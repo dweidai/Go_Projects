@@ -2,6 +2,7 @@ package main
 /* disclaimer 
  * This data type strcut is not mine, I copied from online source
  */ 
+ // and it it out of date
 type ig_struct struct {
 	Items []struct {
 		AltMediaURL       string `json:"alt_media_url"`
