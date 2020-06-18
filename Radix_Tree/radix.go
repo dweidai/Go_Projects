@@ -21,3 +21,16 @@ type Node struct{
 	edges []Edge
 }
 
+func (n *Node) isLeaf() nool {
+	return n.leaf != nil && len(n.edges) == 0
+}
+
+func (n *Node) insertLeaf(containKey string, totalKey string, value, interface{}){
+	newNode := &Node{leaf:&Leaf{key: totalKey, value: value}}
+	newEdge := Edge{containKey: containKey, sourceNode, n, targetNode: newNode}
+	n.edges = append(n.edges, newEdge)
+}
+
+func (n *Node) insertSplitNode(splitKey string, edgeKey string) *Node {
+	
+}
