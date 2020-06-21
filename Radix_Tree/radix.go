@@ -32,5 +32,21 @@ func (n *Node) insertLeaf(containKey string, totalKey string, value, interface{}
 }
 
 func (n *Node) insertSplitNode(splitKey string, edgeKey string) *Node {
-	
+	if n.isLeaf(){
+		return nil
+	}
+
+	for edgeIndex, _ := range n.edges {
+		if n.edges[edgeIndex].containKey == edgeKey{
+			OGTarget := n.edges[edgeIndex].target
+			splitNode := &Node{}
+			n.edges[edgesIndex] = Edge(key: splitKey, source: n, target: splitNode)
+
+			remainKey := strings.TrimPrefix(edgeKey, splitKey)
+			splitToOG := Edge (key: remainKey, source: splitNode, target: OGTarget)
+			splitNode.edges = append(splitNode.edges, splitToOG)
+			return splitNode
+		}
+	}
+	return nil
 }
