@@ -1,0 +1,5 @@
+Uses Clopper-Pearson interval, Wilson score interval, and sigmoid to evaluate the "hotness" of the post based on number of likes, number of listens, number of comments, and minutes since it was posted. 
+
+To run:
+
+go run ranking.go
