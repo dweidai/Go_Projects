@@ -50,3 +50,8 @@ func (n *Node) insertSplitNode(splitKey string, edgeKey string) *Node {
 	}
 	return nil
 }
+
+type Radix struct{
+	root Node
+}
+

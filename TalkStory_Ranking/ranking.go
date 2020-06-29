@@ -219,7 +219,7 @@ func split(audio []Audio) (neverViewed []Audio, viewedNoLiked []Audio, viewedLik
 func main(){
 	reader := bufio.NewReader(os.Stdin)
 	fmt.Println("\t HERE are the data")
-	db := randomDataBase(20)
+	db := randomDataBase(50)
 	never, viewed, liked := split(db)
 	fmt.Println("Done generating data, press enter to show sorted category 1")
 	text, _ := reader.ReadString('\n')
