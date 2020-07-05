@@ -5,24 +5,34 @@ import (
 	"strings"
 	"fmt"
 	pdf "github.com/unidoc/unipdf/model"
+	creator "github.com/unidoc/unipdf/creator"
 	gopdf "github.com/jung-kurt/gofpdf"
+	docconv "code.sajari.com/docconv"
+	unicommon "github.com/unidoc/unipdf/common"
 	"os"
 )
+func usage(){
 
+	fmt.Println("go run merge.go output.pdf input1.pdf input2.pdf ...\n")
+	fmt.Println("go run merge.go -- executive command")
+	fmt.Println("output.pdf      -- path and name of the output pdf file")
+	fmt.Println("input1.pdf      -- path and name of the first pdf file to be merged")
+	fmt.Println("input2.pdf	     -- path and name of the second pdf file to be merged")
+	fmt.Println("...		     -- as many input pdf file as possible")
+	fmt.Println("If the input file is not pdf, as long as it is DOC, DOCX, PNG, JPEG, GIF, JPG, TXT, HTML, merge.go will convert them to pdf for you")
+	os.Exit(1)
+}
 func main () {
-	if len(os.Args) < 4{
+	if os.Args[1] == "-h" || os.Args[1] == "-help"{
+		usage()
+	} else if len(os.Args) < 4{
 		fmt.Println("Incorrect usage\n")
-		fmt.Println("go run merge.go output.pdf input1.pdf input2.pdf ...\n")
-		fmt.Println("go run merge.go -- executive command")
-		fmt.Println("output.pdf      -- path and name of the output pdf file")
-		fmt.Println("input1.pdf      -- path and name of the first pdf file to be merged")
-		fmt.Println("input2.pdf	     -- path and name of the second pdf file to be merged")
-		fmt.Println("...		     -- as many input pdf file as possible")
-		os.Exit(1)
+		usage()
 	}
 	
 	output := ""
 	inputFiles := []string{}
+	deleteFiles := []string{} //need to be done
 	for i := 0; i < len(os.Args); i++ {
 		if i == 1{
 			output = os.Args[i]
@@ -35,56 +45,135 @@ func main () {
 	for i := 0; i < len(inputFiles); i++ {
 		split := strings.Split(inputFiles[i], ".")
 		extension := split[len(split)-1]
-		fmt.Println(extension)
 		if _, err := os.Stat(inputFiles[i]); os.IsNotExist(err) {
  			fmt.Println(inputFiles[i] + "\tDoes not Exist")
  			os.Exit(1)
 		} else if (extension != "pdf"){
-			fmt.Println("Converting the file to pdf file")
+			fmt.Println("Converting non pdf file to pdf file")
 			if (extension == "txt") {
-				inputFiles[i] = txtToPDF(inputFiles[i])
+				inputFiles[i] = txtToPDF(inputFiles[i], &deleteFiles)
+			} else if (extension == "docx"){
+				inputFiles[i] = docxToPDF(inputFiles[i], &deleteFiles)
+			} else if (extension == "doc"){
+				inputFiles[i] = docToPDF(inputFiles[i], &deleteFiles)
 			} else if (extension == "jpeg" ){
-
+				inputFiles[i] = imageToPDF(inputFiles[i])
 			} else if (extension == "png"){
-
+				inputFiles[i] = imageToPDF(inputFiles[i])
 			} else if (extension == "jpg"){
-
+				inputFiles[i] = imageToPDF(inputFiles[i])
 			} else if (extension == "gif"){
-
+				inputFiles[i] = imageToPDF(inputFiles[i])
+			} else if (extension == "html"){
+				inputFiles[i] = htmlToPDF(inputFiles[i], &deleteFiles)
 			}
 		}
 	}
 
 	fmt.Println("Writing to " + output)
+	fmt.Println(deleteFiles)
 	mergePdf(output, inputFiles)
 }
 
-func txtToPDF(input string) string{
-	txtStr, err := ioutil.ReadFile(input)
-	if err != nil {
-		pdf.SetError(err)
-	}
-	split := strings.Split(inputFiles[i], ".")
+func imageToPDF(input string) string{
+	split := strings.Split(input, ".")
 	split[len(split)-1] = "pdf"
-	toReturn := strings.Join(reg[:],",")
-	err = gopdf.GeneratePdf(toReturn)
+	toReturn := strings.Join(split[:],".")
+	err := helper_imagesToPdf(input, toReturn)
 	if err != nil {
-		panic(err)
+		fmt.Printf("Error: %v\n", err)
+		os.Exit(1)
 	}
-	// Font
-	pdf.SetFont("Times", "", 12)
-	// Output text in a 6 cm width column
-	pdf.MultiCell(60, 5, string(txtStr), "", "", false)
-	pdf.Ln(-1)
 	return toReturn
 }
 
-func pictureToPDF(input string) string{
-	return input
+func txtToPDF(input string, deletefiles *[]string) string{
+	// read the text file data
+	txtStr, err := ioutil.ReadFile(input)
+	if err != nil {
+		panic(err)
+	}
+	// create a text file but with pdf extension
+	split := strings.Split(input, ".")
+	split[len(split)-1] = "pdf"
+	toReturn := strings.Join(split[:],".")
+	newpdf := gopdf.New("P", "mm", "A4", "")
+	newpdf.AddPage()
+	// Font
+	newpdf.SetFont("Times", "", 12)
+	// Output text in a 6 cm width column
+	newpdf.MultiCell(180, 5, string(txtStr), "", "", false)
+	newpdf.Ln(-1)
+	newpdf.OutputFileAndClose(toReturn)
+	*deletefiles = append(*deletefiles, toReturn)
+	return toReturn
 }
 
-func docToPDF(input string) string{
-	return input
+func docxToPDF(input string, deletefiles *[]string) string{
+	f, err := os.Open(input)
+	if err != nil{
+		panic(err)
+	}
+	resp, _ , err := docconv.ConvertDocx(f)
+	if err != nil {
+		panic(err)
+	}
+	split := strings.Split(input, ".")
+	split[len(split)-1] = "txt"
+	toReturn := strings.Join(split[:],".")
+	var file, error = os.Create(toReturn)
+	if error != nil {
+		panic(error)
+	}
+	defer file.Close()
+	file.WriteString(resp)
+	*deletefiles = append(*deletefiles, toReturn)
+	return txtToPDF(toReturn, deletefiles)
+}
+
+func docToPDF(input string, deletefiles *[]string) string{
+	f, err := os.Open(input)
+	if err != nil{
+		panic(err)
+	}
+	fmt.Println("reached")
+	resp, _ , err := docconv.ConvertDoc(f)
+	if err != nil {
+		panic(err)
+	}
+	split := strings.Split(input, ".")
+	split[len(split)-1] = "txt"
+	toReturn := strings.Join(split[:],".")
+	var file, error = os.Create(toReturn)
+	if error != nil {
+		panic(error)
+	}
+	defer file.Close()
+	file.WriteString(resp)
+	*deletefiles = append(*deletefiles, toReturn)
+	return txtToPDF(toReturn, deletefiles)
+}
+
+func htmlToPDF(input string, deleteFiles *[]string) string{
+	f, err := os.Open(input)
+	if err != nil{
+		panic(err)
+	}
+	resp, _ , err := docconv.ConvertHTML(f, true)
+	if err != nil {
+		panic(err)
+	}
+	split := strings.Split(input, ".")
+	split[len(split)-1] = "txt"
+	toReturn := strings.Join(split[:],".")
+	var file, error = os.Create(toReturn)
+	if error != nil {
+		panic(error)
+	}
+	defer file.Close()
+	file.WriteString(resp)
+	*deleteFiles = append(*deleteFiles, toReturn)
+	return txtToPDF(toReturn, deleteFiles)
 }
 
 func mergePdf(output string, inputFiles []string) error{
@@ -161,4 +250,26 @@ func mergePdf(output string, inputFiles []string) error{
 		os.Exit(1)
 	}
 	return nil
+}
+
+func helper_imagesToPdf(inputPath string, outputPath string) error {
+	c := creator.New()
+
+	imgPath := inputPath
+	unicommon.Log.Debug("Image: %s", imgPath)
+
+	img, err := c.NewImageFromFile(imgPath)
+	if err != nil {
+		unicommon.Log.Debug("Error loading image: %v", err)
+		return err
+	}
+	img.ScaleToWidth(612.0)
+
+	height := 612.0 * img.Height() / img.Width()
+	c.SetPageSize(creator.PageSize{612, height})
+	c.NewPage()
+	img.SetPos(0, 0)
+	_ = c.Draw(img)
+	err = c.WriteToFile(outputPath)
+	return err
 }
