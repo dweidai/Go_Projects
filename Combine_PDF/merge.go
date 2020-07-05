@@ -1,16 +1,17 @@
 package main
 
 import (
-	"io/ioutil"
-	"strings"
-	"fmt"
-	pdf "github.com/unidoc/unipdf/model"
-	creator "github.com/unidoc/unipdf/creator"
-	gopdf "github.com/jung-kurt/gofpdf"
 	docconv "code.sajari.com/docconv"
+	"fmt"
+	gopdf "github.com/jung-kurt/gofpdf"
 	unicommon "github.com/unidoc/unipdf/common"
+	creator "github.com/unidoc/unipdf/creator"
+	pdf "github.com/unidoc/unipdf/model"
+	"io/ioutil"
 	"os"
+	"strings"
 )
+
 func usage(){
 
 	fmt.Println("go run merge.go output.pdf input1.pdf input2.pdf ...\n")
@@ -57,13 +58,13 @@ func main () {
 			} else if (extension == "doc"){
 				inputFiles[i] = docToPDF(inputFiles[i], &deleteFiles)
 			} else if (extension == "jpeg" ){
-				inputFiles[i] = imageToPDF(inputFiles[i])
+				inputFiles[i] = imageToPDF(inputFiles[i], &deleteFiles)
 			} else if (extension == "png"){
-				inputFiles[i] = imageToPDF(inputFiles[i])
+				inputFiles[i] = imageToPDF(inputFiles[i], &deleteFiles)
 			} else if (extension == "jpg"){
-				inputFiles[i] = imageToPDF(inputFiles[i])
+				inputFiles[i] = imageToPDF(inputFiles[i], &deleteFiles)
 			} else if (extension == "gif"){
-				inputFiles[i] = imageToPDF(inputFiles[i])
+				inputFiles[i] = imageToPDF(inputFiles[i], &deleteFiles)
 			} else if (extension == "html"){
 				inputFiles[i] = htmlToPDF(inputFiles[i], &deleteFiles)
 			}
@@ -71,11 +72,18 @@ func main () {
 	}
 
 	fmt.Println("Writing to " + output)
-	fmt.Println(deleteFiles)
 	mergePdf(output, inputFiles)
+	for file := range deleteFiles{
+		err := os.Remove(deleteFiles[file])
+		if err !=nil{
+			_ = os.Remove(output)
+			fmt.Println("Error with deleting temporary conversion files")
+		}
+	}
+	fmt.Println("Done")
 }
 
-func imageToPDF(input string) string{
+func imageToPDF(input string, deletefiles *[]string) string{
 	split := strings.Split(input, ".")
 	split[len(split)-1] = "pdf"
 	toReturn := strings.Join(split[:],".")
@@ -84,6 +92,7 @@ func imageToPDF(input string) string{
 		fmt.Printf("Error: %v\n", err)
 		os.Exit(1)
 	}
+	*deletefiles = append(*deletefiles, toReturn)
 	return toReturn
 }
 

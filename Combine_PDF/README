@@ -1,0 +1,11 @@
+Auto convertion for files into PDF format and merge them into one giant pdf file!
+The following are the usage of the merge.go program
+
+go run merge.go output.pdf input1.pdf input2.pdf ...
+
+go run merge.go -- executive command
+output.pdf      -- path and name of the output pdf file
+input1.pdf      -- path and name of the first pdf file to be merged
+input2.pdf           -- path and name of the second pdf file to be merged
+...                  -- as many input pdf file as possible
+If the input file is not pdf, as long as it is DOC, DOCX, PNG, JPEG, GIF, JPG, TXT, HTML, merge.go will convert them to pdf for you
