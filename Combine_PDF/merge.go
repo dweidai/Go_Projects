@@ -14,7 +14,8 @@ import (
 
 func usage(){
 
-	fmt.Println("go run merge.go output.pdf input1.pdf input2.pdf ...\n")
+	fmt.Println("go run merge.go output.pdf input1.pdf input2.pdf ...")
+	fmt.Println()
 	fmt.Println("go run merge.go -- executive command")
 	fmt.Println("output.pdf      -- path and name of the output pdf file")
 	fmt.Println("input1.pdf      -- path and name of the first pdf file to be merged")
@@ -27,7 +28,8 @@ func main () {
 	if os.Args[1] == "-h" || os.Args[1] == "-help"{
 		usage()
 	} else if len(os.Args) < 4{
-		fmt.Println("Incorrect usage\n")
+		fmt.Println("Incorrect usage")
+		fmt.Println()
 		usage()
 	}
 	
@@ -37,7 +39,7 @@ func main () {
 	for i := 0; i < len(os.Args); i++ {
 		if i == 1{
 			output = os.Args[i]
-		} else if (i > 1){
+		} else if i > 1 {
 			inputFiles = append(inputFiles, os.Args[i])
 		}
 	}
@@ -49,23 +51,23 @@ func main () {
 		if _, err := os.Stat(inputFiles[i]); os.IsNotExist(err) {
  			fmt.Println(inputFiles[i] + "\tDoes not Exist")
  			os.Exit(1)
-		} else if (extension != "pdf"){
+		} else if extension != "pdf" {
 			fmt.Println("Converting non pdf file to pdf file")
-			if (extension == "txt") {
+			if extension == "txt" {
 				inputFiles[i] = txtToPDF(inputFiles[i], &deleteFiles)
-			} else if (extension == "docx"){
+			} else if extension == "docx" {
 				inputFiles[i] = docxToPDF(inputFiles[i], &deleteFiles)
-			} else if (extension == "doc"){
+			} else if extension == "doc" {
 				inputFiles[i] = docToPDF(inputFiles[i], &deleteFiles)
-			} else if (extension == "jpeg" ){
+			} else if extension == "jpeg" {
 				inputFiles[i] = imageToPDF(inputFiles[i], &deleteFiles)
-			} else if (extension == "png"){
+			} else if extension == "png" {
 				inputFiles[i] = imageToPDF(inputFiles[i], &deleteFiles)
-			} else if (extension == "jpg"){
+			} else if extension == "jpg" {
 				inputFiles[i] = imageToPDF(inputFiles[i], &deleteFiles)
-			} else if (extension == "gif"){
+			} else if extension == "gif" {
 				inputFiles[i] = imageToPDF(inputFiles[i], &deleteFiles)
-			} else if (extension == "html"){
+			} else if extension == "html" {
 				inputFiles[i] = htmlToPDF(inputFiles[i], &deleteFiles)
 			}
 		}
@@ -83,20 +85,20 @@ func main () {
 	fmt.Println("Done")
 }
 
-func imageToPDF(input string, deletefiles *[]string) string{
+func imageToPDF(input string, deleteFiles *[]string) string{
 	split := strings.Split(input, ".")
 	split[len(split)-1] = "pdf"
 	toReturn := strings.Join(split[:],".")
-	err := helper_imagesToPdf(input, toReturn)
+	err := helperImagestopdf(input, toReturn)
 	if err != nil {
 		fmt.Printf("Error: %v\n", err)
 		os.Exit(1)
 	}
-	*deletefiles = append(*deletefiles, toReturn)
+	*deleteFiles = append(*deleteFiles, toReturn)
 	return toReturn
 }
 
-func txtToPDF(input string, deletefiles *[]string) string{
+func txtToPDF(input string, deleteFiles *[]string) string{
 	// read the text file data
 	txtStr, err := ioutil.ReadFile(input)
 	if err != nil {
@@ -114,11 +116,11 @@ func txtToPDF(input string, deletefiles *[]string) string{
 	newpdf.MultiCell(180, 5, string(txtStr), "", "", false)
 	newpdf.Ln(-1)
 	newpdf.OutputFileAndClose(toReturn)
-	*deletefiles = append(*deletefiles, toReturn)
+	*deleteFiles = append(*deleteFiles, toReturn)
 	return toReturn
 }
 
-func docxToPDF(input string, deletefiles *[]string) string{
+func docxToPDF(input string, deleteFiles *[]string) string{
 	f, err := os.Open(input)
 	if err != nil{
 		panic(err)
@@ -136,16 +138,15 @@ func docxToPDF(input string, deletefiles *[]string) string{
 	}
 	defer file.Close()
 	file.WriteString(resp)
-	*deletefiles = append(*deletefiles, toReturn)
-	return txtToPDF(toReturn, deletefiles)
+	*deleteFiles = append(*deleteFiles, toReturn)
+	return txtToPDF(toReturn, deleteFiles)
 }
 
-func docToPDF(input string, deletefiles *[]string) string{
+func docToPDF(input string, deleteFiles *[]string) string{
 	f, err := os.Open(input)
 	if err != nil{
 		panic(err)
 	}
-	fmt.Println("reached")
 	resp, _ , err := docconv.ConvertDoc(f)
 	if err != nil {
 		panic(err)
@@ -159,8 +160,8 @@ func docToPDF(input string, deletefiles *[]string) string{
 	}
 	defer file.Close()
 	file.WriteString(resp)
-	*deletefiles = append(*deletefiles, toReturn)
-	return txtToPDF(toReturn, deletefiles)
+	*deleteFiles = append(*deleteFiles, toReturn)
+	return txtToPDF(toReturn, deleteFiles)
 }
 
 func htmlToPDF(input string, deleteFiles *[]string) string{
@@ -209,7 +210,6 @@ func mergePdf(output string, inputFiles []string) error{
 
 		if isEncrypted {
 			auth, err := pdfReader.Decrypt([]byte(""))
-			fmt.Println(auth)
 			if err != nil {
 				fmt.Println(err)
 				os.Exit(1)
@@ -261,7 +261,7 @@ func mergePdf(output string, inputFiles []string) error{
 	return nil
 }
 
-func helper_imagesToPdf(inputPath string, outputPath string) error {
+func helperImagestopdf(inputPath string, outputPath string) error {
 	c := creator.New()
 
 	imgPath := inputPath
