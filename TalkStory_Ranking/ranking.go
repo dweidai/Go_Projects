@@ -55,8 +55,17 @@ func newAudio(numListens int, numLikes int, numComments int,  upload time.Time, 
  */
 func randomDataBase(numEntries int) []Audio{
 	toReturn := make([]Audio, numEntries)
-	for i := 0; i < numEntries; i++ {
-		listens := rand.Intn(1000)
+	fresh := new(Audio)
+	fresh.listens = 0
+	fresh.likes = 0
+	fresh.comments = 0
+	fresh.uploadTime = time. Now()
+	fresh.viewed = false
+	fresh.liked = false
+	toReturn[0] = *fresh
+	Print(*fresh)
+	for i := 1; i < numEntries; i++ {
+		listens := rand.Intn(100)
 		likes := 0
 		if(listens != 0){
 			likes = rand.Intn(listens)
@@ -65,8 +74,11 @@ func randomDataBase(numEntries int) []Audio{
 		if(likes != 0){
 			comments = rand.Intn(likes)
 		}
-		randomTime := rand.Int63n(time.Now().Unix() - 94608000) + 94608000
-		uploadTime := time.Unix(randomTime, 0)
+		min := time.Date(2020, 6, 20, 0, 0, 0, 0, time.UTC).Unix()
+		max := time.Date(2020, 7, 4, 0, 0, 0, 0, time.UTC).Unix()
+		delta := max - min
+		sec := rand.Int63n(delta) + min
+		uploadTime := time.Unix(sec, 0)
 		viewed := true 
 		if rand.Intn(2) == 1{
 			viewed = false
@@ -82,38 +94,40 @@ func randomDataBase(numEntries int) []Audio{
 	return toReturn
 }
 
-// Attempted using Wilson score interval but twisted with golden ratio and like/views ratio
+// Attempted using Wilson score interval but twisted with E and like/time ratio
 // high confidence score should come to the front of the viewers
-func confidence(likes int, listens int) float64{
-	if (likes == 0){
+func confidence(likes int, comments int, diffs int) float64{
+	if likes == 0 {
 		return 0
 	}
-	like := float64(likes)
-	listen := float64(listens)
-	z := 1.61803398875
-	p := like /listen
-	left := p+1.0/(2.0*(listen))*z*z
-	right := z*math.Sqrt(p*(1.0-p)/(listen) + z*z/(4.0*listen*listen))
-	under := 1.0+1.0/(listen)*z*z
-
+	diff := (float64(diffs))/100
+	if (diffs <= 3){
+		diffs = 1
+	}
+	like := float64(likes) + float64(comments) * math.SqrtE
+	z := math.E
+	p := like /diff
+	left := p+z/(2.0*(diff))*z*z
+	right := z*math.Sqrt(p*(1.0-p)/(diff) + z*z/(4.0*diff*diff))
+	under := 1.0+1.0/(diff)*z*z
 	return (left-right)/under
 }
 
 // combination of Clopper-Pearson interval with sigmoid 
 // take as a penalty, if the the penalty score is low then the confidence is high
-func discriminant(likes int, comments int, diffs int) float64{
+func discriminant(likes int, comments int, listens int) float64{
 	active := float64(likes) + float64(comments)
-	if (diffs == 0){
-		diffs = 1
+	if (listens == 0){
+		listens = 1
 	}
-	diff := float64(diffs)
-	p := (active/diff)*(1-(active/diff))/diff
-	//diff = math.Log(float64(diffs))
-	z := 1.61803398875
-	upper := (1- (p + (z*z)/2/diff))
-	lower := 1 + (z*z)/diff
-	x := 1- 1 / (1+math.Exp(upper/lower * (-1)))
-	return x-0.2
+	listen := float64(listens)
+	p := (active/listen)*(1-(active/listen))/listen
+	z := math.E
+	upper := (1- (p + (z*z)/2/listen))
+	lower := 1 + (z*z)/listen
+	//sigmoid
+	//x := 1- 1 / (1+math.Exp(upper/lower * (-1)))
+	return upper/lower
 }
 /** 
  * Calculate the time difference between the uploaded time and current time
@@ -124,18 +138,15 @@ func timeDiff(uploadTime time.Time) int{
 	return int(minDiff)
 }
 
-/**
- * 
- * 
- */
+
 func score(audio Audio) float64{
-	conf := confidence(audio.likes, audio.listens)
 	diff := timeDiff(audio.uploadTime)
-	disc := discriminant(audio.likes, audio.comments, diff)
-	if conf-disc <= 0{
-		return 0
-	}
-	return conf-disc
+	conf := confidence(audio.likes, audio.comments, diff)
+	disc := discriminant(audio.likes, audio.comments, audio.listens)
+	//if conf-disc <= 0{
+	//	return 0
+	//}
+	return 1+conf-disc
 }
 
 /**
@@ -219,7 +230,20 @@ func split(audio []Audio) (neverViewed []Audio, viewedNoLiked []Audio, viewedLik
 func main(){
 	reader := bufio.NewReader(os.Stdin)
 	fmt.Println("\t HERE are the data")
-	db := randomDataBase(50)
+	db := randomDataBase(30)
+	/*fmt.Println("Done generating data, press enter to show sorted")
+	text, _ := reader.ReadString('\n')
+	fmt.Println(text)
+	if text == "\n" {
+		sortDB := Sort(db)
+		fmt.Println()
+		fmt.Println("Sorted and Ranked")
+		fmt.Println()
+		for i := 0; i < len(sortDB); i++ {
+			Print(sortDB[i])
+			fmt.Println(score(sortDB[i]))
+		}
+	}*/
 	never, viewed, liked := split(db)
 	fmt.Println("Done generating data, press enter to show sorted category 1")
 	text, _ := reader.ReadString('\n')
