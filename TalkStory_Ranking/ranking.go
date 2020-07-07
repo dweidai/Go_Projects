@@ -134,7 +134,7 @@ func discriminant(likes int, comments int, listens int) float64{
  */
 func timeDiff(uploadTime time.Time) int{
 	duration := time.Since(uploadTime)
-	minDiff := duration.Minutes()
+	minDiff := duration.Hours()
 	return int(minDiff)
 }
 
