@@ -62,7 +62,7 @@ func getImageFromFilePath(filePath string) ([][]Pixel, error) {
 func main(){
 	dataFiles := getFilesFromDir("/Users/dwei/Desktop/chest_xray/val/NORMAL")
 	 for _, file := range dataFiles {
-    	fmt.Println(file)
+    	fmt.Println(file )
     }
 	pixels, err := getImageFromFilePath(dataFiles[0])
 	if err != nil{
